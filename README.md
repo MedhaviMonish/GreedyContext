@@ -13,12 +13,12 @@ The graph below shows how **GreedyContext** creates a semantic trail from the la
 - Node numbers correspond to message order in the chat.
 
 <p align="center">
-  <img src="images/without_threshold.png" alt="GreedyContext Graph Example without threshold" width="600"/>
+  <img src="images/without_threshold.png" alt="GreedyContext Graph Example without threshold" width="500"/>
 </p>
 
 
 <p align="center">
-  <img src="images/with_threshold.png" alt="GreedyContext Graph Example with threshold 0.2" width="600"/>
+  <img src="images/with_threshold.png" alt="GreedyContext Graph Example with threshold 0.2" width="500"/>
 </p>
 
 > ⚠️ This image is just a static snapshot. For interactive exploration, open the `interactive_graph_without_threshold.html` file in your browser after running the script.
