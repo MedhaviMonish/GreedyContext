@@ -4,10 +4,24 @@
 It identifies only the most semantically relevant messages from a conversation history using cosine similarity and a greedy traversal path over a graph of sentence embeddings.
 
 ---
+## 🖼️ Greedy Path Visualization (Example)
 
-![GreedyContext Graph with no threshold](images/without_threshold.png)
+The graph below shows how **GreedyContext** creates a semantic trail from the latest message back through the most relevant past messages.  
 
-![GreedyContext Graph with threshold 0.2](images/with_threshold.png)
+- **Red edges** show the greedy path selected for context.
+- **Gray edges** represent other message-to-message semantic connections (above the similarity threshold).
+- Node numbers correspond to message order in the chat.
+
+<p align="center">
+  <img src="images/without_threshold.png" alt="GreedyContext Graph Example without threshold" width="600"/>
+</p>
+
+
+<p align="center">
+  <img src="images/with_threshold.png" alt="GreedyContext Graph Example with threshold 0.2" width="600"/>
+</p>
+
+> ⚠️ This image is just a static snapshot. For interactive exploration, open the `interactive_graph_without_threshold.html` file in your browser after running the script.
 
 ---
 
