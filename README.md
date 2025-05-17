@@ -1,21 +1,51 @@
 # GreedyContext
-**GreedyContext** is a lightweight, dependency-free module that intelligently filters long conversation histories using embedding similarity and greedy path traversal. It minimizes token usage and latency when feeding context to LLMs — especially in chatbots and retrieval-based systems.
+
+**GreedyContext** is a simple, self-contained solution to reduce token usage and latency in LLM-based applications.  
+It identifies only the most semantically relevant messages from a conversation history using cosine similarity and a greedy traversal path over a graph of sentence embeddings.
 
 ---
 
 ## 🔍 What It Does
-- Encodes all messages using `SentenceTransformers`
-- Builds a **cosine similarity graph** from message embeddings
-- Uses a **greedy path algorithm** to traverse the most semantically relevant message chain
-- Outputs only the most relevant subset of messages — sometimes as few as one!
 
-This avoids blindly passing the last 100 messages to your LLM, saving tokens and improving latency.
+- Encodes conversation messages using `SentenceTransformers`
+- Builds a **cosine similarity matrix** between all messages
+- Converts it into a **strict upper triangular graph** — so messages only link to **previous** ones
+- Traverses the graph using a **greedy algorithm** to extract the most relevant backward message chain
+- Outputs a reduced set of messages to feed into your LLM
 
 ---
 
-## 🧠 Ideal Use Cases
+## ✅ Why Use It
 
-- LLM-powered chatbots with long conversation history
-- Memory-efficient assistants
-- No need for summarization at every few steps
-- Token-aware prompt construction tools
+- No need to pass all past messages — pass just the semantically important ones
+- Reduces token count and speeds up LLM responses
+- No summarization step required
+- Works without vector DBs or third-party memory libraries
+
+---
+
+## ⚙️ Practical Notes
+
+- Suggested similarity **threshold**: `0.2`  
+  (Helps ignore unrelated or noisy messages)
+- **Pyvis** is used only for visualization. You don’t need it in your actual chatbot pipeline.
+- This is not a Python library or package — it’s a **working solution** you can adapt to your use case.
+
+---
+
+## 💡 Use Cases
+
+- LLM-powered chatbots with large conversation histories
+- Token-aware context filtering (e.g., for OpenAI, Claude, LLaMA, etc.)
+- Systems where summarization is not ideal or would degrade fidelity
+- Fast pre-processing before calling LLMs
+
+---
+
+## 📷 Demo (Optional)
+
+Run the app to see how the graph and greedy traversal work:
+
+```bash
+pip install -r requirements.txt
+python app.py
