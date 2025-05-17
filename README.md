@@ -5,6 +5,12 @@ It identifies only the most semantically relevant messages from a conversation h
 
 ---
 
+![GreedyContext Graph with no threshold](images/without_threshold.png)
+
+![GreedyContext Graph with threshold 0.2](images/with_threshold.png)
+
+---
+
 ## 🔍 What It Does
 
 - Encodes conversation messages using `SentenceTransformers`
