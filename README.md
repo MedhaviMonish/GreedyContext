@@ -4,26 +4,6 @@
 It identifies only the most semantically relevant messages from a conversation history using cosine similarity and a greedy traversal path over a graph of sentence embeddings.
 
 ---
-## 🖼️ Greedy Path Visualization (Example)
-
-The graph below shows how **GreedyContext** creates a semantic trail from the latest message back through the most relevant past messages.  
-
-- **Red edges** show the greedy path selected for context.
-- **Gray edges** represent other message-to-message semantic connections (above the similarity threshold).
-- Node numbers correspond to message order in the chat.
-
-<p align="center">
-  <img src="images/without_threshold.png" alt="GreedyContext Graph Example without threshold" width="500"/>
-</p>
-
-
-<p align="center">
-  <img src="images/with_threshold.png" alt="GreedyContext Graph Example with threshold 0.2" width="500"/>
-</p>
-
-> ⚠️ This image is just a static snapshot. For interactive exploration, open the `interactive_graph_without_threshold.html` file in your browser after running the script.
-
----
 
 ## 🔍 What It Does
 
@@ -37,35 +17,80 @@ The graph below shows how **GreedyContext** creates a semantic trail from the la
 
 ## ✅ Why Use It
 
-- No need to pass all past messages — pass just the semantically important ones
-- Reduces token count and speeds up LLM responses
-- No summarization step required
-- Works without vector DBs or third-party memory libraries
+- Avoid sending 100s of previous messages — pass only what's contextually relevant
+- Greatly reduces token count and latency
+- No summarization or vector DBs needed
+- Easy to integrate in existing LLM chat workflows
 
 ---
 
 ## ⚙️ Practical Notes
 
-- Suggested similarity **threshold**: `0.2`  
-  (Helps ignore unrelated or noisy messages)
-- **Pyvis** is used only for visualization. You don’t need it in your actual chatbot pipeline.
-- This is not a Python library or package — it’s a **working solution** you can adapt to your use case.
+- A similarity **threshold of `0.2`** is recommended  
+  (It helps eliminate noise and keeps the message chain focused)
+- **Pyvis** is only used for visualizing the graph — not required in production
+- This is not a pip-installable module — it’s a plug-and-play solution
 
 ---
 
 ## 💡 Use Cases
 
-- LLM-powered chatbots with large conversation histories
-- Token-aware context filtering (e.g., for OpenAI, Claude, LLaMA, etc.)
-- Systems where summarization is not ideal or would degrade fidelity
-- Fast pre-processing before calling LLMs
+- LLM-powered chatbots with long histories
+- Fast, token-aware context filtering for OpenAI / Claude / LLaMA
+- Replacing summarization with real-time relevance filtering
+- Lightweight retrieval for memory-augmented agents
 
 ---
 
-## 📷 Demo (Optional)
+## 🖼️ Greedy Path Visualization
 
-Run the app to see how the graph and greedy traversal work:
+The following graphs show the difference with and without applying a similarity threshold.  
+In both images, **red edges** show the final greedy path selected for context, while **gray edges** show all other semantic links.
+
+---
+
+### 🔻 Without Threshold (Any similarity accepted)
+
+<p align="center">
+  <img src="images/without_threshold.png" alt="GreedyContext Graph Example without threshold" width="600"/>
+</p>
+
+A dense graph with many weak or irrelevant connections. The greedy path still works, but noise increases.
+
+---
+
+### ✅ With Threshold = 0.2
+
+<p align="center">
+  <img src="images/with_threshold.png" alt="GreedyContext Graph Example with threshold 0.2" width="600"/>
+</p>
+
+Cleaner and more focused. Only strong semantic links are kept. The greedy path becomes much clearer.
+
+> 🧠 Use `threshold = 0.2` in practice for clean context chains.
+
+---
+
+## 🚀 Demo (Optional)
+
+You can run the script and inspect the printed greedy path or view the HTML graph:
 
 ```bash
 pip install -r requirements.txt
 python app.py
+```
+
+> This generates `interactive_graph_without_threshold.html` — open it in a browser to explore the graph interactively.
+
+---
+
+## 🪪 License
+
+Licensed under the **MIT License** — free to use, modify, or integrate into your systems.
+
+---
+
+## 👤 Author
+
+Built by [@MedhaviMonish](https://github.com/MedhaviMonish)  
+Originally designed for real-world LLM apps needing fast, lightweight context selection.
