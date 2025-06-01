@@ -7,7 +7,7 @@ It builds a similarity graph over the messages and uses a greedy algorithm to tr
 
 ### ✨ Features
 
-- Builds a semantic similarity graph using **SentenceTransformers** or **CrossEncoder**
+- Builds a semantic similarity graph using **SentenceTransformer (cosine)** or **CrossEncoder (pairwise scoring)**
 - Applies **greedy relevance tracing** to extract core context
 - Handles both `user` and `assistant` roles, preserving causal links
 - Outputs filtered message trace for LLM context compression
@@ -28,7 +28,8 @@ chat_messages = [
     {"role": "user", "content": "Should I start with ROS or electronics to build autonomous vehicles?"}
 ]
 
-graph = SemanticContextGraph(chat_messages)
+# Recommended: use mode='cross' for better semantic accuracy
+graph = SemanticContextGraph(chat_messages, model_name="cross-encoder/stsb-roberta-base", mode="cross")
 graph.build_graph(threshold=0.2)
 
 # Start from latest message, trace back to first
@@ -49,10 +50,17 @@ for msg in relevant_messages:
 
 ### 🧠 How It Works
 
-1. **Embeds all messages** using a SentenceTransformer model (default: `all-MiniLM-L6-v2`) or scores them with `CrossEncoder`
+1. **Embeds all messages** using a SentenceTransformer model (e.g. `all-MiniLM-L6-v2`) or scores each pair using a `CrossEncoder` (e.g. `cross-encoder/stsb-roberta-base`)
 2. **Creates a directed graph**, where edges connect semantically similar earlier messages
 3. **Traverses greedily** from latest message to earliest relevant ones, following strongest similarities
 4. **Returns only the subset** of messages needed to understand or reply to the final input
+
+---
+
+### 💡 Recommendation
+
+While both modes are supported, **CrossEncoder is recommended** for higher accuracy in detecting nuanced relevance between messages.  
+Cosine-based similarity from embeddings is faster but may miss directionality or weaker links.
 
 ---
 
@@ -73,7 +81,7 @@ This means:
 - ✅ Lower noise in the graph
 - 📉 Less memory usage when sending messages to the LLM
 
-In some cases, applying a threshold **may break a path** (no connection found) — but when it works, it ensures that **only the strongest, most meaningful message connections** are preserved.
+In some cases, applying a threshold **may break a path in graph** (no related messages found) — then it will return till whatever it found, threshold ensures that **only the strongest, most meaningful message connections** are preserved.
 
 ---
 

@@ -52,6 +52,8 @@ class SemanticContextGraph:
         current = start_node
         path = [current]
         while current != goal_node:
+            if current not in self.graph:
+                return path
             neighbors = list(self.graph[current].items())
             if not neighbors:
                 break
@@ -127,7 +129,7 @@ chat_messages = [
     {"role": "user", "content": "Should I start with ROS or learn basic electronics first if I want to build small autonomous vehicles?"}
 ]
 
-threshold=0.0
+threshold=0.3
 print("*"*40)
 print("Cross encoder")
 graph = SemanticContextGraph(chat_messages, model_name="cross-encoder/stsb-roberta-base", mode="cross")
