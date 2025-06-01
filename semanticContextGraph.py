@@ -1,31 +1,52 @@
-from sentence_transformers import SentenceTransformer
+from sentence_transformers import SentenceTransformer, CrossEncoder
 import networkx as nx
 import numpy as np
 from pyvis.network import Network
 
 class SemanticContextGraph:
-    def __init__(self, chat_messages, model_name="all-MiniLM-L6-v2"):
+    def __init__(self, chat_messages, model_name="all-MiniLM-L6-v2", mode="embedding"):
         self.chat_messages = chat_messages
         self.sentences = [msg["content"] for msg in chat_messages]
         self.roles = {i: msg["role"] for i, msg in enumerate(chat_messages)}
-        self.model = SentenceTransformer(model_name)
-        self.embeddings = self.model.encode(self.sentences)
+        self.mode = mode.lower()
+
+        if self.mode == "embedding":
+            self.model = SentenceTransformer(model_name)
+        elif self.mode == "cross":
+            self.model = CrossEncoder(model_name)
+        else:
+            raise ValueError("mode must be either 'embedding' or 'cross'")
+
         self.graph = nx.DiGraph()
         self.similarity_matrix = self._compute_strict_upper_similarity()
+        # print(self.similarity_matrix.tolist())
 
     def _compute_strict_upper_similarity(self):
-        sim = np.asarray(self.model.similarity(self.embeddings, self.embeddings))
-        for i in range(len(sim)):
-            sim[i, i] = 0
-            for j in range(i):
-                sim[i, j] = 0
-        return sim
+        n = len(self.sentences)
+        sim_matrix = np.zeros((n, n))
+
+        if self.mode == "embedding":
+            embeddings = self.model.encode(self.sentences)
+            sim_matrix = np.asarray(self.model.similarity(embeddings, embeddings))
+            for i in range(n):
+                sim_matrix[i, i] = 0
+                for j in range(i):
+                    sim_matrix[i, j] = 0
+        else:  # mode == "cross"
+            for i in range(n):
+                for j in range(i + 1, n):
+                    score = self.model.predict([[self.sentences[i], self.sentences[j]]])[0]
+                    sim_matrix[i, j] = score  # i = earlier, j = later
+
+        return sim_matrix
 
     def build_graph(self, threshold=0.0):
         for i in range(len(self.similarity_matrix)):
-            for j in range(len(self.similarity_matrix)):
-                if self.similarity_matrix[j, i] > threshold:
-                    self.graph.add_edge(i + 1, j + 1, weight=round(self.similarity_matrix[j, i], 2))
+            for j in range(i + 1, len(self.similarity_matrix)):
+                score = self.similarity_matrix[i, j]
+                if score > threshold:
+                    self.graph.add_edge(j + 1, i + 1, weight=round(score, 2))  # from current (j) ➝ past (i)
+        print(self.graph.edges)
 
     def greedy_path(self, start_node, goal_node):
         current = start_node
@@ -40,15 +61,17 @@ class SemanticContextGraph:
             path.append(next_node)
             current = next_node
         return path
-    
+
     def extract_relevant_messages(self, path):
         path = list(reversed(path))
         used_ids = []
         selected = []
+
         def add_if_new(idx):
             if idx not in used_ids and 0 <= idx < len(self.sentences):
                 used_ids.append(idx)
                 selected.append({"role": self.roles[idx], "content": self.sentences[idx]})
+
         for node in path:
             idx = node - 1
             add_if_new(idx)
@@ -58,7 +81,6 @@ class SemanticContextGraph:
                 add_if_new(idx - 1)
 
         return used_ids, selected
-
 
     def save_pyvis_graph(self, highlight_path=None, file_name="interactive_graph.html"):
         net = Network(height="800px", width="100%", directed=True)
@@ -78,7 +100,6 @@ class SemanticContextGraph:
             weight = float(data["weight"])
             color = "gray"
             width = 2
-            print(u-1, v-1, weight, highlight_path)
             if highlight_path and (u-1, v-1) in zip(highlight_path[1:], highlight_path):
                 color = "red"
                 width = 10
@@ -106,7 +127,25 @@ chat_messages = [
 ]
 
 threshold=0.2
-graph = SemanticContextGraph(chat_messages)
+print("*"*40)
+print("Cross encoder")
+graph = SemanticContextGraph(chat_messages, model_name="cross-encoder/stsb-roberta-base", mode="cross")
+graph.build_graph(threshold=threshold)
+path = graph.greedy_path(start_node=len(chat_messages), goal_node=1)
+path_recreated, messages = graph.extract_relevant_messages(path)
+
+if threshold == 0.0:
+    graph.save_pyvis_graph(highlight_path=path_recreated, file_name="interactive_graph_without_threshold.html")
+else:
+    graph.save_pyvis_graph(highlight_path=path_recreated, file_name="interactive_graph_with_threshold.html")
+
+for msg in messages:
+    print(f"{msg['role'].upper()}: {msg['content']}")
+
+
+print("*"*40)
+print("Cosine similarity encoder")
+graph = SemanticContextGraph(chat_messages, model_name="all-MiniLM-L6-v2", mode="embedding")
 graph.build_graph(threshold=threshold)
 path = graph.greedy_path(start_node=len(chat_messages), goal_node=1)
 path_recreated, messages = graph.extract_relevant_messages(path)

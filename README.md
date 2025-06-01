@@ -7,7 +7,7 @@ It builds a similarity graph over the messages and uses a greedy algorithm to tr
 
 ### ✨ Features
 
-- Builds a semantic similarity graph using **SentenceTransformers**
+- Builds a semantic similarity graph using **SentenceTransformers** or **CrossEncoder**
 - Applies **greedy relevance tracing** to extract core context
 - Handles both `user` and `assistant` roles, preserving causal links
 - Outputs filtered message trace for LLM context compression
@@ -49,10 +49,31 @@ for msg in relevant_messages:
 
 ### 🧠 How It Works
 
-1. **Embeds all messages** using a SentenceTransformer model (default: `all-MiniLM-L6-v2`)
-2. **Creates a directed graph**, where edges connect semantically similar previous messages
+1. **Embeds all messages** using a SentenceTransformer model (default: `all-MiniLM-L6-v2`) or scores them with `CrossEncoder`
+2. **Creates a directed graph**, where edges connect semantically similar earlier messages
 3. **Traverses greedily** from latest message to earliest relevant ones, following strongest similarities
 4. **Returns only the subset** of messages needed to understand or reply to the final input
+
+---
+
+### 🔍 Visual Comparison: With vs Without Threshold
+
+<p align="center">
+  <img src="images/without_threshold.png" alt="GreedyContext Graph Example without threshold" width="500"/>
+</p>
+
+<p align="center">
+  <img src="images/with_threshold.png" alt="GreedyContext Graph Example with threshold 0.2" width="500"/>
+</p>
+
+Even though both graphs above result in the same final semantic path (shown in red), the **second graph (with threshold)** contains fewer edges overall.
+
+This means:
+- 🔻 Fewer semantic hops to consider
+- ✅ Lower noise in the graph
+- 📉 Less memory usage when sending messages to the LLM
+
+In some cases, applying a threshold **may break a path** (no connection found) — but when it works, it ensures that **only the strongest, most meaningful message connections** are preserved.
 
 ---
 
