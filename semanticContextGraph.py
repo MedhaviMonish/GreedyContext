@@ -74,11 +74,12 @@ class SemanticContextGraph:
 
         for node in path:
             idx = node - 1
-            add_if_new(idx)
             if self.roles.get(idx) == "user":
+                add_if_new(idx)
                 add_if_new(idx + 1)
             elif self.roles.get(idx) == "assistant":
                 add_if_new(idx - 1)
+                add_if_new(idx)
 
         return used_ids, selected
 
@@ -126,7 +127,7 @@ chat_messages = [
     {"role": "user", "content": "Should I start with ROS or learn basic electronics first if I want to build small autonomous vehicles?"}
 ]
 
-threshold=0.2
+threshold=0.0
 print("*"*40)
 print("Cross encoder")
 graph = SemanticContextGraph(chat_messages, model_name="cross-encoder/stsb-roberta-base", mode="cross")
