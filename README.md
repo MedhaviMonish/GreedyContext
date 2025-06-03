@@ -97,3 +97,14 @@ pip install sentence-transformers networkx numpy pyvis
 
 This project is licensed under the **MIT License**.  
 You are free to use, modify, and distribute it — with credit.
+---
+
+### 📦 Model Attribution
+
+This project uses the following open-source models from Hugging Face:
+
+- [`sentence-transformers/all-MiniLM-L6-v2`](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) — Apache License 2.0  
+- [`cross-encoder/stsb-roberta-base`](https://huggingface.co/cross-encoder/stsb-roberta-base) — Apache License 2.0  
+
+Their use is compliant with their respective licenses.  
+All rights remain with the original authors.
